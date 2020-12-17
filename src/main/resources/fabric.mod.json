@@ -1,0 +1,37 @@
+{
+    "schemaVersion": 1,
+    "id": "entity-distance",
+    "version": "${version}",
+
+    "name": "Entity Distance Mod",
+    "description": "Allows the user to adjust the (client) distance at which different entities render.",
+    "authors": [
+        "capnkork"
+    ],
+    "contact": {
+        "homepage": "https://capnkork.com/",
+        "sources": "https://github.com/capnkork/entity-distance"
+    },
+
+    "license": "MIT",
+    "icon": "assets/entitydistance/icon.png",
+
+    "environment": "client",
+    "entrypoints": {
+        "modmenu": [
+            "com.capnkork.entitydistance.config.ModMenuIntegration"
+        ]
+    },
+    "mixins": [
+        "entitydistance.mixins.json"
+    ],
+
+    "depends": {
+        "fabricloader": ">=0.7.4",
+        "fabric": "*",
+        "minecraft": ">=1.14.4",
+        "modmenu": ">=1.14.3"
+    },
+    "suggests": {
+    }
+}
