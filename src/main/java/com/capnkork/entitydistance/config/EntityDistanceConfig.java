@@ -15,7 +15,6 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -48,14 +47,14 @@ public final class EntityDistanceConfig {
 
     private int versionId = 0;
 
-    private class EntityTypeComparator implements Comparator<EntityType<?>> {
+    private static class EntityTypeComparator implements Comparator<EntityType<?>> {
         @Override
         public int compare(EntityType<?> a, EntityType<?> b) {
             return EntityType.getId(a).compareTo(EntityType.getId(b));
         }
     }
 
-    private Map<EntityType<?>, Integer> distances = new LinkedHashMap<>();
+    private final Map<EntityType<?>, Integer> distances = new LinkedHashMap<>();
 
     private EntityDistanceConfig() {
         // get all types
@@ -65,7 +64,7 @@ public final class EntityDistanceConfig {
         }
 
         // sort alphabetically
-        Collections.sort(types, new EntityTypeComparator());
+        types.sort(new EntityTypeComparator());
 
         // insert into LinkedHashMap (which preserves insertion order)
         for (EntityType<?> type : types) {
@@ -96,9 +95,7 @@ public final class EntityDistanceConfig {
             .setParentScreen(parent)
             .setTitle(new TranslatableText("Entity Distance Mod"));
 
-        builder.setSavingRunnable(() -> {
-            saveConfig();
-        });
+        builder.setSavingRunnable(this::saveConfig);
 
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
         ConfigCategory general = builder.getOrCreateCategory(new TranslatableText("Entity Distances"));
@@ -120,7 +117,7 @@ public final class EntityDistanceConfig {
         return builder.build();
     }
 
-    private class EntityTypeJson implements JsonSerializer<EntityType<?>>, JsonDeserializer<EntityType<?>> {
+    private static class EntityTypeJson implements JsonSerializer<EntityType<?>>, JsonDeserializer<EntityType<?>> {
         @Override
         public JsonElement serialize(EntityType<?> entity, Type type, JsonSerializationContext context) {
             return new JsonPrimitive(EntityType.getId(entity).toString());
@@ -130,8 +127,11 @@ public final class EntityDistanceConfig {
         public EntityType<?> deserialize(JsonElement json, Type type, JsonDeserializationContext context) {
             String entityId = json.getAsString();
             Optional<EntityType<?>> entityType = EntityType.get(entityId);
-            if (!entityType.isPresent()) {
-                System.err.printf("[Entity Distance Mod] Unable to find entity corresponding to id \"%s\" in config file\n", entityId);
+            if (entityType.isEmpty()) {
+                System.err.printf(
+                    "[Entity Distance Mod] Unable to find entity corresponding to id \"%s\" in config file\n",
+                    entityId
+                );
                 return null;
             }
 
@@ -155,7 +155,11 @@ public final class EntityDistanceConfig {
         
             gson.toJson(changedDistances, writer);
         } catch (IOException e) {
-            System.err.printf("[Entity Distance Mod] Unable to write Entity Distance Mod config to %s\n\tException is: %s\n", CONFIG_PATH.toString(), e.toString());
+            System.err.printf(
+                "[Entity Distance Mod] Unable to write Entity Distance Mod config to %s\n\tException is: %s\n",
+                CONFIG_PATH,
+                e
+            );
         }
     }
 
@@ -176,7 +180,11 @@ public final class EntityDistanceConfig {
 
             versionId++;
         } catch (Exception e) {
-            System.err.printf("[Entity Distance Mod] Unable to read Entity Distance Mod config at %s\n\tException is: %s\n", CONFIG_PATH.toString(), e.toString());
+            System.err.printf(
+                "[Entity Distance Mod] Unable to read Entity Distance Mod config at %s\n\tException is: %s\n",
+                CONFIG_PATH,
+                e
+            );
         }
     }
 }
