@@ -16,8 +16,8 @@ repositories {
 }
 
 dependencies {
-    //implementation "com.google.code.gson:gson:2.8.6"
-    //include "com.google.code.gson:gson:2.8.6"
+    implementation "com.google.code.gson:gson:2.8.6"
+    include "com.google.code.gson:gson:2.8.6"
 
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
