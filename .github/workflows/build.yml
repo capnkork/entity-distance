@@ -31,9 +31,9 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
-      - name: capture build artifacts
-        if: ${{ runner.os == 'Linux' && matrix.java == '16' }} # Only upload artifacts built from latest java on one OS
-        uses: actions/upload-artifact@v2
+      - name: upload assets to GitHub
+        if: ${{ runner.os == 'Linux' && matrix.java == '16' }} # Only upload assets built from latest java on one OS
+        uses: AButler/upload-release-assets@v2.0
         with:
-          name: Artifacts
-          path: build/libs/
+          files: 'build/libs/*;LICENSE'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
