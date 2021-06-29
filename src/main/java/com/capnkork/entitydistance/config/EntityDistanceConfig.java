@@ -49,6 +49,7 @@ public final class EntityDistanceConfig {
     }
 
     private final Map<EntityType<?>, Integer> distances = new LinkedHashMap<>();
+    private final Map<String, Integer> unknownConfig = new LinkedHashMap<>();
 
     private EntityDistanceConfig() {
         // get all types
@@ -113,15 +114,21 @@ public final class EntityDistanceConfig {
 
     private void saveConfig() {
         try (Writer writer = new FileWriter(CONFIG_PATH.toFile())) {
-            Map<String, Integer> changedDistances = new LinkedHashMap<>();
+            // add values changed from defaults to map
+            Map<String, Integer> outMap = new LinkedHashMap<>();
             for (Map.Entry<EntityType<?>, Integer> entry : distances.entrySet()) {
                 if (entry.getValue() != DEFAULT_DISTANCE) {
-                    changedDistances.put(EntityType.getId(entry.getKey()).toString(), entry.getValue());
+                    outMap.put(EntityType.getId(entry.getKey()).toString(), entry.getValue());
                 }
             }
 
+            // add values from original config that were not found as entities
+            for (Map.Entry<String, Integer> entry : unknownConfig.entrySet()) {
+                outMap.put(entry.getKey(), entry.getValue());
+            }
+
             Gson gson = new GsonBuilder().create();
-            gson.toJson(changedDistances, writer);
+            gson.toJson(outMap, writer);
         } catch (IOException e) {
             System.err.printf(
                 "[Entity Distance Mod] Unable to write Entity Distance Mod config to %s\n\tException is: %s\n",
@@ -146,6 +153,8 @@ public final class EntityDistanceConfig {
                         "[Entity Distance Mod] Unable to find entity corresponding to id \"%s\" in config file\n",
                         entry.getKey()
                     );
+                    // keep values from config so they are not lost
+                    unknownConfig.put(entry.getKey(), entry.getValue());
                 }
             }
 
