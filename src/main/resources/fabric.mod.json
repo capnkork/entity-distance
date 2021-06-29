@@ -14,7 +14,7 @@
     },
 
     "license": "MIT",
-    "icon": "assets/entitydistance/icon.png",
+    "icon": "assets/entity-distance/icon.png",
 
     "environment": "client",
     "entrypoints": {
@@ -23,7 +23,7 @@
         ]
     },
     "mixins": [
-        "entitydistance.mixins.json"
+        "entity-distance.mixins.json"
     ],
 
     "depends": {
