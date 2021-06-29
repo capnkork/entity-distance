@@ -24,12 +24,6 @@ import java.util.Optional;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -55,6 +49,7 @@ public final class EntityDistanceConfig {
     }
 
     private final Map<EntityType<?>, Integer> distances = new LinkedHashMap<>();
+    private final Map<String, Integer> unknownConfig = new LinkedHashMap<>();
 
     private EntityDistanceConfig() {
         // get all types
@@ -117,43 +112,23 @@ public final class EntityDistanceConfig {
         return builder.build();
     }
 
-    private static class EntityTypeJson implements JsonSerializer<EntityType<?>>, JsonDeserializer<EntityType<?>> {
-        @Override
-        public JsonElement serialize(EntityType<?> entity, Type type, JsonSerializationContext context) {
-            return new JsonPrimitive(EntityType.getId(entity).toString());
-        }
-
-        @Override
-        public EntityType<?> deserialize(JsonElement json, Type type, JsonDeserializationContext context) {
-            String entityId = json.getAsString();
-            Optional<EntityType<?>> entityType = EntityType.get(entityId);
-            if (entityType.isEmpty()) {
-                System.err.printf(
-                    "[Entity Distance Mod] Unable to find entity corresponding to id \"%s\" in config file\n",
-                    entityId
-                );
-                return null;
-            }
-
-            return entityType.get();
-        }
-    }
-
     private void saveConfig() {
         try (Writer writer = new FileWriter(CONFIG_PATH.toFile())) {
-            Map<EntityType<?>, Integer> changedDistances = new LinkedHashMap<>();
+            // add values changed from defaults to map
+            Map<String, Integer> outMap = new LinkedHashMap<>();
             for (Map.Entry<EntityType<?>, Integer> entry : distances.entrySet()) {
                 if (entry.getValue() != DEFAULT_DISTANCE) {
-                    changedDistances.put(entry.getKey(), entry.getValue());
+                    outMap.put(EntityType.getId(entry.getKey()).toString(), entry.getValue());
                 }
             }
 
-            Gson gson = new GsonBuilder()
-                .registerTypeAdapter(EntityType.class, new EntityTypeJson())
-                .enableComplexMapKeySerialization()
-                .create();
-        
-            gson.toJson(changedDistances, writer);
+            // add values from original config that were not found as entities
+            for (Map.Entry<String, Integer> entry : unknownConfig.entrySet()) {
+                outMap.put(entry.getKey(), entry.getValue());
+            }
+
+            Gson gson = new GsonBuilder().create();
+            gson.toJson(outMap, writer);
         } catch (IOException e) {
             System.err.printf(
                 "[Entity Distance Mod] Unable to write Entity Distance Mod config to %s\n\tException is: %s\n",
@@ -165,16 +140,21 @@ public final class EntityDistanceConfig {
 
     private void loadConfig() {
         try (Reader reader = new FileReader(CONFIG_PATH.toFile())) {
-            Gson gson = new GsonBuilder()
-                .registerTypeAdapter(EntityType.class, new EntityTypeJson())
-                .enableComplexMapKeySerialization()
-                .create();
+            Gson gson = new GsonBuilder().create();
         
-            Type mapType = TypeToken.getParameterized(HashMap.class, EntityType.class, Integer.class).getType();
-            Map<EntityType<?>, Integer> savedDistances = gson.fromJson(reader, mapType);
-            for (Map.Entry<EntityType<?>, Integer> entry : savedDistances.entrySet()) {
-                if (entry.getKey() != null) {
-                    distances.put(entry.getKey(), entry.getValue());
+            Type mapType = TypeToken.getParameterized(HashMap.class, String.class, Integer.class).getType();
+            Map<String, Integer> savedDistances = gson.fromJson(reader, mapType);
+            for (Map.Entry<String, Integer> entry : savedDistances.entrySet()) {
+                Optional<EntityType<?>> entityType = EntityType.get(entry.getKey());
+                if (entityType.isPresent()) {
+                    distances.put(entityType.get(), entry.getValue());
+                } else {
+                    System.err.printf(
+                        "[Entity Distance Mod] Unable to find entity corresponding to id \"%s\" in config file\n",
+                        entry.getKey()
+                    );
+                    // keep values from config so they are not lost
+                    unknownConfig.put(entry.getKey(), entry.getValue());
                 }
             }
 
