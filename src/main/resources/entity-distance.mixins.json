@@ -3,10 +3,9 @@
   "minVersion": "0.8",
   "package": "com.capnkork.entitydistance.mixin",
   "compatibilityLevel": "JAVA_16",
-  "mixins": [
-  ],
   "client": [
-    "MixinEntity"
+    "MixinEntity",
+    "MixinItemFrameEntity"
   ],
   "injectors": {
     "defaultRequire": 1

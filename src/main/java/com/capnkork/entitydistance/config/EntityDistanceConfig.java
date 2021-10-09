@@ -123,9 +123,7 @@ public final class EntityDistanceConfig {
             }
 
             // add values from original config that were not found as entities
-            for (Map.Entry<String, Integer> entry : unknownConfig.entrySet()) {
-                outMap.put(entry.getKey(), entry.getValue());
-            }
+            outMap.putAll(unknownConfig);
 
             Gson gson = new GsonBuilder().create();
             gson.toJson(outMap, writer);
