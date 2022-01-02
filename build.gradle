@@ -16,7 +16,9 @@ repositories {
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
+	// Assume that GSON is already loaded (which is the case with multimc and official launcher)
+
+	// To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
