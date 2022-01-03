@@ -11,7 +11,7 @@ jobs:
       matrix:
         # Use these Java versions
         java: [
-            16    # Minimum supported by Minecraft
+            17    # Minimum supported by Minecraft
         ]
         # build release binaries on Ubuntu
         os: [ ubuntu-20.04 ]
